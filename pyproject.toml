@@ -13,3 +13,6 @@ dependencies = [
     "torchvision",
     "timm"
 ]
+
+[tool.setuptools.packages.find]
+include = ["models*"]
