@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[source]]
+url = "https://download.pytorch.org/whl/cu132"
+verify_ssl = true
+name = "downloadpytorch"
+
+[packages]
+torch = {version = "*", index = "downloadpytorch"}
+torchvision = {version = "*", index = "downloadpytorch"}
+ipywidgets = "*"
+medmnist = "*"
+matplotlib = "*"
+peft = "*"
+transformers = "*"
+scikit-learn = "*"
+timm = "*"
+
+[dev-packages]
+ipykernel = "*"
+
+[requires]
+python_version = "3.14"
