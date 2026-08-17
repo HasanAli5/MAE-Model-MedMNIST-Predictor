@@ -220,3 +220,5 @@ __marimo__/
 *.npz
 *.pt
 model_weights/
+
+hf_space/
