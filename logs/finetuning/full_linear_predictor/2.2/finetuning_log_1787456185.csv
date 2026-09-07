@@ -1,0 +1,1 @@
+epoch,train_loss,val_loss,train_delta,val_delta,train_acc,val_acc,train_auc,val_auc,predictor_lr,encoder_lr

@@ -222,3 +222,7 @@ __marimo__/
 model_weights/
 
 hf_space/
+
+mlartifacts/
+
+*.db

@@ -9,8 +9,6 @@ verify_ssl = true
 name = "downloadpytorch"
 
 [packages]
-torch = {version = "*", index = "downloadpytorch"}
-torchvision = {version = "*", index = "downloadpytorch"}
 ipywidgets = "*"
 medmnist = "*"
 matplotlib = "*"
@@ -18,6 +16,10 @@ peft = "*"
 transformers = "*"
 scikit-learn = "*"
 timm = "*"
+torchvision = "*"
+torch = "*"
+numpy = "*"
+mlflow = "*"
 
 [dev-packages]
 ipykernel = "*"

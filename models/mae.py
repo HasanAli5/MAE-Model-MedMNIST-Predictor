@@ -41,12 +41,12 @@ class CNN(nn.Module):
 
 class Encoder(nn.Module):
 
-    def Tblocks(self,length:int, embed_dim:int, num_head:int):
+    def Tblocks(self,length:int, embed_dim:int, num_head:int,droppath:float=0):
         # multi layer maker
         assert length > 0,"Invalid Block Length"
         blocks = []
         for _ in range(length):
-            blocks.append(TransformerBlock(embed_dim,num_head))
+            blocks.append(TransformerBlock(embed_dim,num_head,droppath=droppath))
         blocks.append(nn.LayerNorm(embed_dim))
         return nn.Sequential(*blocks)
 
@@ -54,12 +54,13 @@ class Encoder(nn.Module):
                  input_shape:tuple=(3,64,64),
                  t_length:int=8,
                  embed_dim:int=512,
-                 num_head:int=8):
+                 num_head:int=8,
+                 droppath:float=0):
         super().__init__()
         # dimension
         self.embed_dim = embed_dim
         # layers
-        self.transformer_blocks = self.Tblocks(t_length,embed_dim,num_head)
+        self.transformer_blocks = self.Tblocks(t_length,embed_dim,num_head,droppath)
 
     def forward(self,x):
         x = self.transformer_blocks(x)
@@ -260,7 +261,7 @@ class AutoEncoder(nn.Module):
 
         
         self.patcher = patcher if patcher else CNN(input_shape,window_size=window_size)
-        self.encoder = encoder if encoder else Encoder(input_shape)
+        self.encoder = encoder if encoder else Encoder(input_shape,droppath=0.1)
         self.register_buffer(
                     'pos_embed',
                     build_sincos2d_pos_embed(feat_shape=(grid_size_h, grid_size_w),dim=self.encoder.embed_dim).float().unsqueeze(0))

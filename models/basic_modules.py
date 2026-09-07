@@ -2,16 +2,20 @@ from torch import nn
 import torch
 from timm.layers.pos_embed_sincos  import build_sincos2d_pos_embed, build_rotary_pos_embed, apply_rot_embed
 
+from timm.layers.drop import DropPath
+from torchvision.ops import StochasticDepth
+
 
 class MultiHeadAttention(nn.Module):
 
-    def __init__(self,embed_dim:int,num_heads:int):
+    def __init__(self,embed_dim:int,num_heads:int,dropout:float=0):
         super().__init__()
         assert embed_dim % num_heads == 0,f"Embedding dimension must be a multiple of {num_heads}"
         # parameters
         self.embed_dim = embed_dim
         self.num_heads = num_heads
         self.head_dim = embed_dim // num_heads
+        self.dropout = dropout
         # layers
         self.linear_qkv = nn.Linear(embed_dim, 3* embed_dim)
         self.linear_out = nn.Linear(embed_dim,embed_dim)
@@ -32,7 +36,7 @@ class MultiHeadAttention(nn.Module):
         qkv = qkv.transpose(1,2)
         #cuts the head dim into three parts
         q,k,v = qkv.chunk(3,-1)
-        values = nn.functional.scaled_dot_product_attention(q,k,v,dropout_p=0,is_causal=False)
+        values = nn.functional.scaled_dot_product_attention(q,k,v,dropout_p=self.dropout,is_causal=False)
         values = values.transpose(1,2)
         values = values.reshape(batch,seq,embed_dim)
         output = self.linear_out(values)
@@ -40,13 +44,14 @@ class MultiHeadAttention(nn.Module):
 
 class CrossAttention(nn.Module):
 
-    def __init__(self,embed_dim:int,num_heads:int):
+    def __init__(self,embed_dim:int,num_heads:int,dropout:float=0):
         super().__init__()
         assert embed_dim % num_heads == 0,f"Embedding dimension must be a multiple of {num_heads}"
         # parameters
         self.embed_dim = embed_dim
         self.num_heads = num_heads
         self.head_dim = embed_dim // num_heads
+        self.dropout = dropout
         # layers
         self.linear_kv = nn.Linear(embed_dim, 2* embed_dim)
         self.linear_q = nn.Linear(embed_dim, embed_dim)
@@ -88,7 +93,7 @@ class CrossAttention(nn.Module):
         q = apply_rot_embed(q, q_sin, q_cos)
         k = apply_rot_embed(k, k_sin, k_cos)
 
-        values = nn.functional.scaled_dot_product_attention(q,k,v,dropout_p=0,is_causal=False)
+        values = nn.functional.scaled_dot_product_attention(q,k,v,dropout_p=self.dropout,is_causal=False)
         values = values.transpose(1,2)
         values = values.reshape(q_batch,q_seq,q_embed_dim)
         output = self.linear_out(values)
@@ -115,32 +120,36 @@ class FeedForward(nn.Module):
         x = self.fc2(x)
         return x
 
-
 class TransformerBlock(nn.Module):
 
     def __init__(self,
                  embed_dim:int,
-                 num_heads:int):
+                 num_heads:int,
+                 dropout:float=0,
+                 droppath:float=0):
         super().__init__()
         # layers
-        self.mha = MultiHeadAttention(embed_dim,num_heads)
+        self.mha = MultiHeadAttention(embed_dim,num_heads,dropout)
         self.norm1 = nn.LayerNorm(embed_dim)
         self.norm2 = nn.LayerNorm(embed_dim)
         self.ff = FeedForward(embed_dim,4*embed_dim)
+        self.droppath1 = DropPath(droppath)
+        self.droppath2 = DropPath(droppath)
         
     def forward(self,x):
-        x = self.mha(self.norm1(x)) + x
-        x = self.ff(self.norm2(x)) + x
+        x = self.droppath1(self.mha(self.norm1(x))) + x
+        x = self.droppath2(self.ff(self.norm2(x))) + x
         return x
 
 class CrossAttensionTransformerBlock(nn.Module):
 
     def __init__(self,
                  embed_dim:int,
-                 num_heads:int):
+                 num_heads:int,
+                 dropout:float=0):
         super().__init__()
         # layers
-        self.ca = CrossAttention(embed_dim,num_heads)
+        self.ca = CrossAttention(embed_dim,num_heads,dropout)
         self.kv_norm = nn.LayerNorm(embed_dim)
         self.q_norm = nn.LayerNorm(embed_dim)
         self.norm2 = nn.LayerNorm(embed_dim)

@@ -15,13 +15,13 @@ to produce predictions
 class DecoderPredictiorCrossReducer(nn.Module):
 
     def __init__(self,
-                 embed_dim:int=512,n_labels=9,num_head:int=8):
+                 embed_dim:int=512,n_labels=9,num_head:int=8,dropout=0.1):
         super().__init__()
         # dimension
         self.embed_dim = embed_dim
-        self.dropout = nn.Dropout(0.1)
         # back to initial feature size
         self.fc = nn.Linear(embed_dim, n_labels)
+        self.dropout = nn.Dropout(dropout)
         self.cross_reduce = CrossAttensionTransformerBlock(embed_dim=embed_dim,num_heads=num_head)
         self.summarise_token = nn.Parameter(torch.empty(1,1,self.embed_dim))
         # the intial distibution of the q tokens on startup of fresh model
@@ -33,7 +33,7 @@ class DecoderPredictiorCrossReducer(nn.Module):
         fx = self.cross_reduce(summary_tokens,x).flatten(1)
 
         x = x.mean(dim=1)
-        x = fx + x 
+        x = fx + x
         x = self.dropout(x)
         x = self.fc(x)
         return x

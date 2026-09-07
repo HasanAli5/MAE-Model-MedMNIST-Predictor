@@ -4,11 +4,11 @@ from .mae import AutoEncoder
 class DecoderPredictiorLinear(nn.Module):
 
     def __init__(self,
-                 embed_dim:int=512,n_labels=9):
+                 embed_dim:int=512,n_labels=9,dropout=0.1):
         super().__init__()
         # dimension
         self.embed_dim = embed_dim
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(dropout)
         # back to initial feature size
         self.fc = nn.Linear(embed_dim, n_labels)
     

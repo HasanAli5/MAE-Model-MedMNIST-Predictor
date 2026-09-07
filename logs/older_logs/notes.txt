@@ -1,0 +1,4 @@
+the original logs are from when data augmentation was tuned for linear probe (no "nd" or "v2" suffix)
+
+the v2 and nd suffixes are when i introduced color jitter to the data augmentation,
+v2 still having the dropout of 0.1, and nd being for no dropout.

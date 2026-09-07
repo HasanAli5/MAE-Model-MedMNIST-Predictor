@@ -15,14 +15,14 @@ and is applied instead of averaging in the linear predictor
 class DecoderPredictiorCrossReducer(nn.Module):
 
     def __init__(self,
-                 embed_dim:int=512,n_labels=9,num_head:int=8):
+                 embed_dim:int=512,n_labels=9,num_head:int=8,dropout=0.1):
         super().__init__()
         # dimension
         self.embed_dim = embed_dim
-        self.dropout = nn.Dropout(0.1)
         # back to initial feature size
         self.fc = nn.Linear(embed_dim, n_labels)
         self.cross_reduce = CrossAttensionTransformerBlock(embed_dim=embed_dim,num_heads=num_head)
+        self.dropout = nn.Dropout(dropout)
         # the cross reduction query token sequence
         self.summarise_token = nn.Parameter(torch.empty(1,1,self.embed_dim))
         # the intial distibution of the q tokens on startup of fresh model
