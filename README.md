@@ -13,7 +13,7 @@ The best predictor variant was the cross attention pooler with 95.11% test accur
 
 This test accuracy beats the best ResNet (ResNet-50 (28)) model accuracy from the official MedMNIST v2 dataset benchmark by 4%.
 
-Here are the variants and their test accuracies and AUC:
+Here are the variants and their test accuracies and AUCs:
 
 |         Variant          |      Accuracy      |         AUC       |
 |--------------------------|--------------------|-------------------|
